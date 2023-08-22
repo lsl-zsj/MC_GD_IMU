@@ -13,6 +13,7 @@ classdef MadgwickAHRS < handle
         SamplePeriod = 1/256;
         Quaternion = [1 0 0 0];     % output quaternion describing the Earth relative to the sensor
         Beta = 1;               	% algorithm gain
+        Err=zeros(6,1);
     end
 
     %% Public methods
@@ -76,11 +77,9 @@ classdef MadgwickAHRS < handle
                 2*b(2)*q(3),                2*b(2)*q(4)-4*b(4)*q(2),	2*b(2)*q(1)-4*b(4)*q(3),        2*b(2)*q(2)];
             
             
-            % FG
-%             diay=exp(-F.*F./0.01);
-%             F=F.*diay;
+            error=F;
             step = (J'*F);
-            %step = step / norm(step);	% normalise step magnitude
+            step = step / norm(step);	% normalise step magnitude
 
             
             % Compute rate of change of quaternion
@@ -89,6 +88,7 @@ classdef MadgwickAHRS < handle
             % Integrate to yield quaternion
             q = q + qDot * obj.SamplePeriod;
             obj.Quaternion = q / norm(q); % normalise quaternion
+            obj.Err=error;
         end
         function obj = UpdateIMU(obj, Gyroscope, Accelerometer)
             q = obj.Quaternion; % short name local variable for readability
