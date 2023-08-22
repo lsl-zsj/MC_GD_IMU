@@ -91,11 +91,13 @@ classdef ShileiLiAHRS < handle
                GF(i)= exp(-(F(i)^2)/(2*obj.Sigma_m^2));
             end
             
-            F=F.*GF;
-            
-            step = (J'*F);
-            %step = step / norm(step);	% normalise step magnitude
-
+            % step old
+            stepori = J'*F;
+            step_norm = norm(stepori);	% normalise step magnitude
+            % step new
+            F=F.*GF; % shrinkage
+            step=J'*F;
+            step=step/step_norm;
             
             % Compute rate of change of quaternion
             qDot = 0.5 * quaternProd(q, [0 Gyroscope(1) Gyroscope(2) Gyroscope(3)]) - obj.Beta * step';
